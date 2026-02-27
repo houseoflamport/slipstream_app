@@ -567,12 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Back buttons
   document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
   document.getElementById('back-preview').addEventListener('click', () => showScreen('screen-home'));
-
-  // GPX file input
-  document.getElementById('file-drop').addEventListener('click', () => {
-    document.getElementById('gpx-file-input').click();
-  });
-
   document.getElementById('gpx-file-input').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
