@@ -110,6 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-import').addEventListener('click', () => showScreen('screen-import'));
   document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
 
+  document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
+
+document.getElementById('file-drop').addEventListener('click', () => {
+  document.getElementById('gpx-file-input').click();
+});
+
   document.getElementById('gpx-file-input').addEventListener('change', function() {
     const file = this.files[0];
     if (!file) return;
