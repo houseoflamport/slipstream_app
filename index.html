@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1C1C1E">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Slipstream">
   <title>Slipstream</title>
   <link rel="manifest" href="manifest.json">
@@ -20,7 +19,6 @@
       <div class="tagline">Run with anyone. Anywhere. Any time.</div>
       <div class="home-actions">
         <button class="btn btn-primary" id="btn-import">Import a Garmin Run</button>
-        <button class="btn btn-secondary" id="btn-load">Load a Ghost Run</button>
       </div>
     </div>
   </div>
@@ -33,122 +31,21 @@
     </div>
     <div class="screen-body">
       <p class="instructions">Export your run from Garmin Connect as a GPX file, then import it here.</p>
-      <label class="file-drop" id="file-drop">
-        <input type="file" id="gpx-file-input" accept=".gpx" hidden>
+
+      <div class="file-drop" id="file-drop">
+        <input type="file" id="gpx-file-input" accept=".gpx">
         <span class="file-drop-icon">+</span>
         <span class="file-drop-label">Tap to select GPX file</span>
-      </label>
+      </div>
+
       <div id="import-error" class="error-msg hidden"></div>
       <div id="import-result" class="result-card hidden"></div>
-    </div>
-  </div>
 
-  <!-- SCREEN: Run Preview (before starting) -->
-  <div id="screen-preview" class="screen">
-    <div class="screen-header">
-      <button class="btn-back" id="back-preview">&#8592;</button>
-      <span class="screen-title">Ghost Run</span>
-    </div>
-    <div class="screen-body">
-      <div class="ghost-card" id="ghost-card"></div>
-      <div class="run-name-wrap">
-        <label class="field-label">Name this run</label>
-        <input type="text" id="run-name-input" class="text-input" placeholder="e.g. Saturday 10k">
+      <div id="share-row" class="share-row hidden">
+        <input type="text" id="run-name-input" class="text-input" placeholder="Name this run…" maxlength="40">
+        <button class="btn btn-primary" id="btn-share" disabled>Share</button>
       </div>
-      <button class="btn btn-primary" id="btn-start-run">Run with this Ghost</button>
-      <button class="btn btn-secondary" id="btn-share-run">Share this Ghost Run</button>
-    </div>
-  </div>
 
-  <!-- SCREEN: Active Run -->
-  <div id="screen-run" class="screen">
-    <div class="run-topbar">
-      <span class="wordmark-small">Slipstream</span>
-      <span class="ghost-run-label" id="run-ghost-label">Ghost</span>
-    </div>
-    <div class="stats-row">
-      <div class="stat">
-        <span class="stat-value" id="stat-pace">0:00</span>
-        <span class="stat-label">Pace /km</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-value" id="stat-time">0:00</span>
-        <span class="stat-label">Time</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-value" id="stat-dist">0.00</span>
-        <span class="stat-label">KM</span>
-      </div>
-    </div>
-    <div class="run-centre" id="run-centre">
-      <!-- Gap indicator injected by JS -->
-      <div class="gap-block" id="gap-top">
-        <svg class="gap-arrow" id="arrow-top" width="22" height="18" viewBox="0 0 22 18">
-          <polygon points="11,0 22,18 0,18" fill="currentColor"/>
-        </svg>
-        <div class="gap-distance" id="dist-top">+0s</div>
-        <div class="gap-sublabel" id="sub-top">ghost ahead</div>
-      </div>
-      <!-- Runner figure -->
-      <div class="figure-area" id="figure-area">
-        <div class="pulse-ring"></div>
-        <svg class="runner-fig" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="52,4 60,13 52,21 44,13" stroke-width="1.8"/>
-            <line x1="52" y1="21" x2="50" y2="30" stroke-width="1.8"/>
-            <line x1="50" y1="30" x2="48" y2="62" stroke-width="2.2"/>
-            <line x1="26" y1="36" x2="68" y2="34" stroke-width="1.8"/>
-            <polyline points="26,36 16,22 22,14" stroke-width="1.8"/>
-            <polyline points="68,34 82,52 78,62" stroke-width="1.8"/>
-            <line x1="36" y1="62" x2="60" y2="62" stroke-width="1.8"/>
-            <polyline points="57,62 68,44 76,50" stroke-width="2"/>
-            <polyline points="68,44 74,60 68,70" stroke-width="1.6"/>
-            <polyline points="39,62 28,88" stroke-width="2"/>
-            <polyline points="28,88 22,112 32,118" stroke-width="1.8"/>
-          </g>
-        </svg>
-      </div>
-      <div class="gap-block hidden" id="gap-bottom">
-        <div class="gap-distance" id="dist-bottom">-0s</div>
-        <div class="gap-sublabel" id="sub-bottom">you're ahead</div>
-        <svg class="gap-arrow" id="arrow-bottom" width="22" height="18" viewBox="0 0 22 18">
-          <polygon points="11,18 22,0 0,0" fill="currentColor"/>
-        </svg>
-      </div>
-      <div class="status-line" id="status-line">Waiting...</div>
-    </div>
-    <!-- Countdown overlay -->
-    <div class="countdown-overlay hidden" id="countdown-overlay">
-      <div class="countdown-number" id="countdown-number">5</div>
-      <div class="countdown-label">Get ready...</div>
-    </div>
-    <div class="run-bottom">
-      <div class="ghost-pace-row">
-        <span class="ghost-pace-label">Ghost pace</span>
-        <span class="ghost-pace-value" id="ghost-ref-pace">--:--</span>
-      </div>
-      <div class="controls-row">
-        <button class="btn btn-pause" id="btn-pause">⏸ Pause</button>
-        <button class="btn btn-stop" id="btn-stop">■ End Run</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Summary -->
-  <div id="screen-summary" class="screen">
-    <div class="screen-header">
-      <span class="screen-title">Run Complete</span>
-    </div>
-    <div class="screen-body">
-      <div class="summary-result" id="summary-result"></div>
-      <div class="summary-grid" id="summary-grid"></div>
-      <div class="summary-actions">
-        <button class="btn btn-primary" id="btn-share-ghost">Share your run as a Ghost</button>
-        <button class="btn btn-secondary" id="btn-export">Export Run Data</button>
-        <button class="btn btn-ghost" id="btn-run-again">Run Again</button>
-      </div>
     </div>
   </div>
 
