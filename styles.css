@@ -659,6 +659,26 @@ svg.runner-fig {
 }
 
 /* ── UTILITIES ── */
+.share-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.share-row .text-input {
+  flex: 1;
+}
+
+.share-row .btn {
+  width: auto;
+  padding: 16px 24px;
+  white-space: nowrap;
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 .hidden {
   display: none !important;
 }
