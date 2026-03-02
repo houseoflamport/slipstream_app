@@ -202,16 +202,8 @@ function tick() {
   if (isPaused) return;
   const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
   document.getElementById('stat-time').textContent = formatTime(elapsed);
-
-  // Calculate ghost distance at this elapsed time
   const ghostDist = ghostDistanceAtTime(elapsed);
-  document.getElementById('ghost-ref-pace').textContent =
-    `Ghost: ${formatDistance(ghostDist)}km — pace ${formatPace(ghostRun.avgPace)}`;
-
-  // Gap vs user (user distance is 0 until Slice C adds GPS)
-  const userDist = 0;
-  const distanceDiff = ghostDist - userDist;
-  const gapSeconds = Math.round(distanceDiff * ghostRun.avgPace);
+  const gapSeconds = Math.round((ghostDist - 0) * ghostRun.avgPace);
   updateGapDisplay(gapSeconds);
 }
 
