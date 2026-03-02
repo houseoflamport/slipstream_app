@@ -174,11 +174,45 @@ function startRun() {
   console.log('Run started');
 }
 
+function ghostDistanceAtTime(elapsedSeconds) {
+  const pts = ghostRun.points;
+  for (let i = 1; i < pts.length; i++) {
+    const ptElapsed = (pts[i].time - pts[0].time) / 1000;
+    if (ptElapsed >= elapsedSeconds) return pts[i].totalDistance;
+  }
+  return ghostRun.totalDistance;
+}
+
+function updateGapDisplay(gapSeconds) {
+  const ref = document.getElementById('ghost-ref-pace');
+  const LOCKED = 5;
+  if (Math.abs(gapSeconds) <= LOCKED) {
+    ref.style.color = '#00E5FF';
+    ref.textContent = `±${Math.abs(gapSeconds)}s — Locked In`;
+  } else if (gapSeconds > 0) {
+    ref.style.color = '#FF9F0A';
+    ref.textContent = `+${gapSeconds}s — Ghost ahead`;
+  } else {
+    ref.style.color = '#30D158';
+    ref.textContent = `−${Math.abs(gapSeconds)}s — You're ahead`;
+  }
+}
+
 function tick() {
   if (isPaused) return;
   const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
   document.getElementById('stat-time').textContent = formatTime(elapsed);
-  // Distance and pace will be added in Slice C
+
+  // Calculate ghost distance at this elapsed time
+  const ghostDist = ghostDistanceAtTime(elapsed);
+  document.getElementById('ghost-ref-pace').textContent =
+    `Ghost: ${formatDistance(ghostDist)}km — pace ${formatPace(ghostRun.avgPace)}`;
+
+  // Gap vs user (user distance is 0 until Slice C adds GPS)
+  const userDist = 0;
+  const distanceDiff = ghostDist - userDist;
+  const gapSeconds = Math.round(distanceDiff * ghostRun.avgPace);
+  updateGapDisplay(gapSeconds);
 }
 
 function togglePause() {
