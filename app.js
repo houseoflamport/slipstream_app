@@ -198,12 +198,11 @@ function togglePause() {
 // ── INIT ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
-  const urlGhost = loadGhostFromURL();
-  if (urlGhost) {
-    ghostRun = urlGhost;
-    showPreview(ghostRun);
-    return;
-  }
+const urlGhost = loadGhostFromURL();
+if (urlGhost) {
+  ghostRun = urlGhost;
+  showPreview(ghostRun);
+}
 
   document.getElementById('btn-import').addEventListener('click', () => showScreen('screen-import'));
   document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
