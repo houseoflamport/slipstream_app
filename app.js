@@ -146,6 +146,8 @@ let startTime = null;
 let isPaused = false;
 let pausedAt = null;
 let totalPausedTime = 0;
+let userPositions = [];
+let locationWatch = null;
 
 function startCountdown(callback) {
   const overlay = document.getElementById('countdown-overlay');
@@ -169,7 +171,26 @@ function startRun() {
   startTime = Date.now();
   totalPausedTime = 0;
   isPaused = false;
+  userPositions = [];
   document.getElementById('ghost-ref-pace').textContent = formatPace(ghostRun.avgPace);
+
+  // Start GPS
+  if ('geolocation' in navigator) {
+    locationWatch = navigator.geolocation.watchPosition(
+      pos => {
+        if (!isPaused) {
+          userPositions.push({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            time: Date.now(),
+          });
+        }
+      },
+      err => console.warn('GPS error:', err.message),
+      { enableHighAccuracy: true, maximumAge: 0 }
+    );
+  }
+
   runInterval = setInterval(tick, 1000);
   console.log('Run started');
 }
@@ -202,8 +223,34 @@ function tick() {
   if (isPaused) return;
   const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
   document.getElementById('stat-time').textContent = formatTime(elapsed);
+
+  // User distance from GPS
+  let userDist = 0;
+  for (let i = 1; i < userPositions.length; i++) {
+    userDist += haversine(
+      userPositions[i-1].lat, userPositions[i-1].lon,
+      userPositions[i].lat, userPositions[i].lon
+    );
+  }
+  document.getElementById('stat-dist').textContent = formatDistance(userDist);
+
+  // Current pace (last 30 seconds)
+  const now = Date.now();
+  const recent = userPositions.filter(p => now - p.time < 30000);
+  if (recent.length >= 2) {
+    let recentDist = 0;
+    for (let i = 1; i < recent.length; i++) {
+      recentDist += haversine(recent[i-1].lat, recent[i-1].lon, recent[i].lat, recent[i].lon);
+    }
+    const recentTime = (recent[recent.length-1].time - recent[0].time) / 1000;
+    if (recentDist > 0) {
+      document.getElementById('stat-pace').textContent = formatPace(recentTime / recentDist);
+    }
+  }
+
+  // Ghost vs user gap
   const ghostDist = ghostDistanceAtTime(elapsed);
-  const gapSeconds = Math.round((ghostDist - 0) * ghostRun.avgPace);
+  const gapSeconds = Math.round((ghostDist - userDist) * ghostRun.avgPace);
   updateGapDisplay(gapSeconds);
 }
 
@@ -282,10 +329,9 @@ if (urlGhost) {
   document.getElementById('btn-pause').addEventListener('click', togglePause);
 
   document.getElementById('btn-stop').addEventListener('click', () => {
-    if (confirm('End this run?')) {
-      clearInterval(runInterval);
-      showScreen('screen-preview');
-    }
-  });
-
+  if (confirm('End this run?')) {
+    clearInterval(runInterval);
+    if (locationWatch) navigator.geolocation.clearWatch(locationWatch);
+    showScreen('screen-preview');
+  }
 });
