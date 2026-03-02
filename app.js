@@ -91,7 +91,7 @@ function shareRun(run) {
     totalTime: run.totalTime,
     avgPace: run.avgPace,
     hasCadence: run.hasCadence,
-    points: run.points.map(p => ({
+    points: run.points.filter((p, i) => i === 0 || i === run.points.length - 1 || i % 30 === 0).map(p => ({
       t: p.time - run.points[0].time,
       d: Math.round(p.totalDistance),
       c: p.cadence,
