@@ -1,4 +1,4 @@
-// ── SLIPSTREAM — Stories 1 + 2 + 3 ───────────────────────────────────────
+// ── SLIPSTREAM — Stories 1 + 2 + 3 + 4A ─────────────────────────────────
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -86,8 +86,8 @@ function showPreview(run) {
 
 function shareRun(run) {
   const totalMinutes = Math.ceil(run.totalTime / 60);
-    const step = Math.max(1, Math.floor(run.points.length / totalMinutes));
-    const payload = {
+  const step = Math.max(1, Math.floor(run.points.length / totalMinutes));
+  const payload = {
     name: run.name,
     totalDistance: run.totalDistance,
     totalTime: run.totalTime,
@@ -123,7 +123,6 @@ function loadGhostFromURL() {
   if (!encoded) return null;
   try {
     const data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-    // Reconstruct points with absolute times
     const baseTime = Date.now();
     data.points = data.points.map(p => ({
       time: baseTime + p.t,
@@ -139,12 +138,66 @@ function loadGhostFromURL() {
   }
 }
 
+// ── RUN STATE ─────────────────────────────────────────────────────────────
 let currentRun = null;
 let ghostRun = null;
+let runInterval = null;
+let startTime = null;
+let isPaused = false;
+let pausedAt = null;
+let totalPausedTime = 0;
 
+function startCountdown(callback) {
+  const overlay = document.getElementById('countdown-overlay');
+  const number = document.getElementById('countdown-number');
+  overlay.classList.remove('hidden');
+  let count = 5;
+  number.textContent = count;
+  const interval = setInterval(() => {
+    count--;
+    if (count <= 0) {
+      clearInterval(interval);
+      overlay.classList.add('hidden');
+      callback();
+    } else {
+      number.textContent = count;
+    }
+  }, 1000);
+}
+
+function startRun() {
+  startTime = Date.now();
+  totalPausedTime = 0;
+  isPaused = false;
+  document.getElementById('ghost-ref-pace').textContent = formatPace(ghostRun.avgPace);
+  runInterval = setInterval(tick, 1000);
+  console.log('Run started');
+}
+
+function tick() {
+  if (isPaused) return;
+  const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
+  document.getElementById('stat-time').textContent = formatTime(elapsed);
+  // Distance and pace will be added in Slice C
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  const btn = document.getElementById('btn-pause');
+  if (isPaused) {
+    pausedAt = Date.now();
+    btn.textContent = '▶ Resume';
+    console.log('Run paused');
+  } else {
+    totalPausedTime += Date.now() - pausedAt;
+    btn.textContent = '⏸ Pause';
+    console.log('Run resumed');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Check for ghost in URL first
   const urlGhost = loadGhostFromURL();
   if (urlGhost) {
     ghostRun = urlGhost;
@@ -197,8 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-run-ghost').addEventListener('click', () => {
-    // Story 4 — placeholder for now
-    alert('Story 4 coming soon — time to run!');
+    showScreen('screen-run');
+    startCountdown(() => startRun());
+  });
+
+  document.getElementById('btn-pause').addEventListener('click', togglePause);
+
+  document.getElementById('btn-stop').addEventListener('click', () => {
+    if (confirm('End this run?')) {
+      clearInterval(runInterval);
+      showScreen('screen-preview');
+    }
   });
 
 });

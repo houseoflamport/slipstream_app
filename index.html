@@ -31,16 +31,13 @@
     </div>
     <div class="screen-body">
       <p class="instructions">Export your run from Garmin Connect as a GPX file, then import it here.</p>
-
       <div class="file-drop" id="file-drop">
         <input type="file" id="gpx-file-input" accept=".gpx" style="position:absolute;width:1px;height:1px;opacity:0;">
         <span class="file-drop-icon">+</span>
         <span class="file-drop-label">Tap to select GPX file</span>
       </div>
-
       <div id="import-error" class="error-msg hidden"></div>
       <div id="import-result" class="result-card hidden"></div>
-
       <div id="share-row" class="share-row hidden">
         <input type="text" id="run-name-input" class="text-input" placeholder="Name this run…" maxlength="40">
         <button class="btn btn-primary" id="btn-share" disabled>Share</button>
@@ -48,7 +45,7 @@
     </div>
   </div>
 
-  <!-- SCREEN: Ghost Preview (opened via shared link) -->
+  <!-- SCREEN: Ghost Preview -->
   <div id="screen-preview" class="screen">
     <div class="screen-header">
       <button class="btn-back" id="back-preview">&#8592;</button>
@@ -60,6 +57,43 @@
       <div id="preview-error" class="error-msg hidden"></div>
       <button class="btn btn-primary" id="btn-run-ghost">Run with this Ghost</button>
     </div>
+  </div>
+
+  <!-- SCREEN: Active Run -->
+  <div id="screen-run" class="screen">
+
+    <!-- Countdown overlay -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+      <div id="countdown-number" class="countdown-number">5</div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-block">
+        <div class="stat-value" id="stat-pace">--:--</div>
+        <div class="stat-label">PACE /km</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-value" id="stat-time">0:00</div>
+        <div class="stat-label">TIME</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-value" id="stat-dist">0.00</div>
+        <div class="stat-label">KM</div>
+      </div>
+    </div>
+
+    <!-- Ghost reference -->
+    <div class="ghost-ref">
+      Ghost pace: <span id="ghost-ref-pace">--:--</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="run-controls">
+      <button class="btn btn-secondary" id="btn-pause">⏸ Pause</button>
+      <button class="btn btn-danger" id="btn-stop">Stop</button>
+    </div>
+
   </div>
 
   <script src="app.js"></script>
