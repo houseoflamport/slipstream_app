@@ -1,4 +1,4 @@
-// ── SLIPSTREAM — Stories 1 + 2 ────────────────────────────────────────────
+// ── SLIPSTREAM — Stories 1 + 2 + 3 ───────────────────────────────────────
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -72,6 +72,18 @@ function showResult(run) {
   document.getElementById('btn-share').disabled = true;
 }
 
+function showPreview(run) {
+  const card = document.getElementById('preview-card');
+  card.innerHTML = `
+    <div class="result-row"><span class="result-label">Name</span><span class="result-value">${run.name || 'Unnamed Run'}</span></div>
+    <div class="result-row"><span class="result-label">Distance</span><span class="result-value">${formatDistance(run.totalDistance)} km</span></div>
+    <div class="result-row"><span class="result-label">Time</span><span class="result-value">${formatTime(run.totalTime)}</span></div>
+    <div class="result-row"><span class="result-label">Avg Pace</span><span class="result-value">${formatPace(run.avgPace)} /km</span></div>
+    <div class="result-row"><span class="result-label">Cadence</span><span class="result-value">${run.hasCadence ? '✓ Available' : 'Not available'}</span></div>
+  `;
+  showScreen('screen-preview');
+}
+
 function shareRun(run) {
   const payload = {
     name: run.name,
@@ -87,7 +99,7 @@ function shareRun(run) {
   };
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const url = `${window.location.origin}${window.location.pathname}?ghost=${encoded}`;
-  console.log('Share URL generated, length:', url.length);
+  console.log('Share URL length:', url.length);
   if (navigator.share) {
     navigator.share({
       title: `Race ${run.name} on Slipstream`,
@@ -103,18 +115,48 @@ function shareRun(run) {
   }
 }
 
+function loadGhostFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('ghost');
+  if (!encoded) return null;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    // Reconstruct points with absolute times
+    const baseTime = Date.now();
+    data.points = data.points.map(p => ({
+      time: baseTime + p.t,
+      totalDistance: p.d,
+      cadence: p.c,
+      lat: null, lon: null,
+    }));
+    console.log('Ghost loaded from URL:', data.name, formatDistance(data.totalDistance) + 'km');
+    return data;
+  } catch(e) {
+    console.error('Failed to decode ghost URL:', e);
+    return null;
+  }
+}
+
 let currentRun = null;
+let ghostRun = null;
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Check for ghost in URL first
+  const urlGhost = loadGhostFromURL();
+  if (urlGhost) {
+    ghostRun = urlGhost;
+    showPreview(ghostRun);
+    return;
+  }
+
   document.getElementById('btn-import').addEventListener('click', () => showScreen('screen-import'));
   document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
+  document.getElementById('back-preview').addEventListener('click', () => showScreen('screen-home'));
 
-  document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
-
-document.getElementById('file-drop').addEventListener('click', () => {
-  document.getElementById('gpx-file-input').click();
-});
+  document.getElementById('file-drop').addEventListener('click', () => {
+    document.getElementById('gpx-file-input').click();
+  });
 
   document.getElementById('gpx-file-input').addEventListener('change', function() {
     const file = this.files[0];
@@ -150,6 +192,11 @@ document.getElementById('file-drop').addEventListener('click', () => {
 
   document.getElementById('btn-share').addEventListener('click', () => {
     if (currentRun && currentRun.name) shareRun(currentRun);
+  });
+
+  document.getElementById('btn-run-ghost').addEventListener('click', () => {
+    // Story 4 — placeholder for now
+    alert('Story 4 coming soon — time to run!');
   });
 
 });
