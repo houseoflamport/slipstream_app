@@ -85,13 +85,15 @@ function showPreview(run) {
 }
 
 function shareRun(run) {
-  const payload = {
+  const totalMinutes = Math.ceil(run.totalTime / 60);
+    const step = Math.max(1, Math.floor(run.points.length / totalMinutes));
+    const payload = {
     name: run.name,
     totalDistance: run.totalDistance,
     totalTime: run.totalTime,
     avgPace: run.avgPace,
     hasCadence: run.hasCadence,
-    points: run.points.filter((p, i) => i === 0 || i === run.points.length - 1 || i % 30 === 0).map(p => ({
+    points: run.points.filter((p, i) => i === 0 || i === run.points.length - 1 || i % step === 0).map(p => ({
       t: p.time - run.points[0].time,
       d: Math.round(p.totalDistance),
       c: p.cadence,
