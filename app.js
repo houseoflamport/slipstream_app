@@ -206,14 +206,19 @@ function ghostDistanceAtTime(elapsedSeconds) {
 
 function updateGapDisplay(gapSeconds) {
   const ref = document.getElementById('ghost-ref-pace');
+  const screen = document.getElementById('screen-run');
   const LOCKED = 5;
+
   if (Math.abs(gapSeconds) <= LOCKED) {
+    screen.style.borderTop = '3px solid #00E5FF';
     ref.style.color = '#00E5FF';
     ref.textContent = `±${Math.abs(gapSeconds)}s — Locked In`;
   } else if (gapSeconds > 0) {
+    screen.style.borderTop = '3px solid #FF9F0A';
     ref.style.color = '#FF9F0A';
     ref.textContent = `+${gapSeconds}s — Ghost ahead`;
   } else {
+    screen.style.borderTop = '3px solid #30D158';
     ref.style.color = '#30D158';
     ref.textContent = `−${Math.abs(gapSeconds)}s — You're ahead`;
   }
