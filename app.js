@@ -210,7 +210,7 @@ function updateGapDisplay(gapSeconds) {
   const LOCKED = 5;
 
   if (Math.abs(gapSeconds) <= LOCKED) {
-    screen.style.borderTop = '3px solid #00E5FF';
+    screen.style.borderTop = '15px solid #00E5FF';
     ref.style.color = '#00E5FF';
     ref.textContent = `±${Math.abs(gapSeconds)}s — Locked In`;
   } else if (gapSeconds > 0) {
