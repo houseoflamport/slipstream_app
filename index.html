@@ -61,13 +61,9 @@
 
   <!-- SCREEN: Active Run -->
   <div id="screen-run" class="screen">
-
-    <!-- Countdown overlay -->
     <div id="countdown-overlay" class="countdown-overlay hidden">
       <div id="countdown-number" class="countdown-number">5</div>
     </div>
-
-    <!-- Stats row -->
     <div class="stats-row">
       <div class="stat-block">
         <div class="stat-value" id="stat-pace">--:--</div>
@@ -82,18 +78,26 @@
         <div class="stat-label">KM</div>
       </div>
     </div>
-
-    <!-- Ghost reference -->
-    <div class="ghost-ref">
-      Ghost pace: <span id="ghost-ref-pace">--:--</span>
-    </div>
-
-    <!-- Controls -->
+    <div class="ghost-ref" id="ghost-ref-pace">--:--</div>
     <div class="run-controls">
       <button class="btn btn-secondary" id="btn-pause">⏸ Pause</button>
       <button class="btn btn-danger" id="btn-stop">Stop</button>
     </div>
+  </div>
 
+  <!-- SCREEN: Summary -->
+  <div id="screen-summary" class="screen">
+    <div id="undo-banner" class="undo-banner hidden">
+      Run ended — <span id="btn-undo" class="undo-link">Undo</span>
+    </div>
+    <div class="screen-header">
+      <span class="screen-title">Run Complete</span>
+    </div>
+    <div class="screen-body">
+      <div id="summary-result" class="summary-result"></div>
+      <div id="summary-grid" class="result-card"></div>
+      <button class="btn btn-primary" id="btn-run-again">Run Again</button>
+    </div>
   </div>
 
   <script src="app.js"></script>

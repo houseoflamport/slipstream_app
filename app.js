@@ -1,4 +1,4 @@
-// ── SLIPSTREAM — Stories 1 + 2 + 3 + 4A ─────────────────────────────────
+// ── SLIPSTREAM — Stories 1 + 2 + 3 + 4 ──────────────────────────────────
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -148,6 +148,8 @@ let pausedAt = null;
 let totalPausedTime = 0;
 let userPositions = [];
 let locationWatch = null;
+let undoTimeout = null;
+let savedRunState = null;
 
 function startCountdown(callback) {
   const overlay = document.getElementById('countdown-overlay');
@@ -174,7 +176,6 @@ function startRun() {
   userPositions = [];
   document.getElementById('ghost-ref-pace').textContent = formatPace(ghostRun.avgPace);
 
-  // Start GPS
   if ('geolocation' in navigator) {
     locationWatch = navigator.geolocation.watchPosition(
       pos => {
@@ -208,17 +209,16 @@ function updateGapDisplay(gapSeconds) {
   const ref = document.getElementById('ghost-ref-pace');
   const screen = document.getElementById('screen-run');
   const LOCKED = 5;
-
   if (Math.abs(gapSeconds) <= LOCKED) {
     screen.style.borderTop = '15px solid #00E5FF';
     ref.style.color = '#00E5FF';
     ref.textContent = `±${Math.abs(gapSeconds)}s — Locked In`;
   } else if (gapSeconds > 0) {
-    screen.style.borderTop = '3px solid #FF9F0A';
+    screen.style.borderTop = '15px solid #FF9F0A';
     ref.style.color = '#FF9F0A';
     ref.textContent = `+${gapSeconds}s — Ghost ahead`;
   } else {
-    screen.style.borderTop = '3px solid #30D158';
+    screen.style.borderTop = '15px solid #30D158';
     ref.style.color = '#30D158';
     ref.textContent = `−${Math.abs(gapSeconds)}s — You're ahead`;
   }
@@ -229,7 +229,6 @@ function tick() {
   const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
   document.getElementById('stat-time').textContent = formatTime(elapsed);
 
-  // User distance from GPS
   let userDist = 0;
   for (let i = 1; i < userPositions.length; i++) {
     userDist += haversine(
@@ -239,7 +238,6 @@ function tick() {
   }
   document.getElementById('stat-dist').textContent = formatDistance(userDist);
 
-  // Current pace (last 30 seconds)
   const now = Date.now();
   const recent = userPositions.filter(p => now - p.time < 30000);
   if (recent.length >= 2) {
@@ -253,7 +251,6 @@ function tick() {
     }
   }
 
-  // Ghost vs user gap
   const ghostDist = ghostDistanceAtTime(elapsed);
   const gapSeconds = Math.round((ghostDist - userDist) * ghostRun.avgPace);
   updateGapDisplay(gapSeconds);
@@ -273,14 +270,89 @@ function togglePause() {
   }
 }
 
+function endRun() {
+  // Save state for undo
+  savedRunState = {
+    startTime,
+    totalPausedTime,
+    isPaused,
+    userPositions: [...userPositions],
+    runInterval,
+    locationWatch,
+  };
+
+  clearInterval(runInterval);
+  if (locationWatch) navigator.geolocation.clearWatch(locationWatch);
+
+  const elapsed = (Date.now() - startTime - totalPausedTime) / 1000;
+  let userDist = 0;
+  for (let i = 1; i < userPositions.length; i++) {
+    userDist += haversine(
+      userPositions[i-1].lat, userPositions[i-1].lon,
+      userPositions[i].lat, userPositions[i].lon
+    );
+  }
+  const userAvgPace = userDist > 0 ? elapsed / userDist : 0;
+  const ghostDist = ghostDistanceAtTime(elapsed);
+  const gapSeconds = Math.round((ghostDist - userDist) * ghostRun.avgPace);
+
+  renderSummary(elapsed, userDist, userAvgPace, gapSeconds);
+  showScreen('screen-summary');
+
+  // Show undo banner for 3 seconds
+  const banner = document.getElementById('undo-banner');
+  banner.classList.remove('hidden');
+  undoTimeout = setTimeout(() => {
+    banner.classList.add('hidden');
+  }, 3000);
+}
+
+function renderSummary(elapsed, userDist, userAvgPace, gapSeconds) {
+  const resultEl = document.getElementById('summary-result');
+  const LOCKED = 5;
+  if (Math.abs(gapSeconds) <= LOCKED) {
+    resultEl.style.color = '#00E5FF';
+    resultEl.textContent = 'Locked In';
+  } else if (gapSeconds < 0) {
+    resultEl.style.color = '#30D158';
+    resultEl.textContent = 'You Won';
+  } else {
+    resultEl.style.color = '#FF9F0A';
+    resultEl.textContent = 'Ghost Won';
+  }
+
+  document.getElementById('summary-grid').innerHTML = `
+    <div class="result-row">
+      <span class="result-label"></span>
+      <span class="result-value" style="font-size:11px;letter-spacing:0.15em;color:var(--text-dim)">YOU</span>
+      <span class="result-value" style="font-size:11px;letter-spacing:0.15em">GHOST</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Time</span>
+      <span class="result-value">${formatTime(elapsed)}</span>
+      <span class="result-value">${formatTime(ghostRun.totalTime)}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Pace</span>
+      <span class="result-value">${formatPace(userAvgPace)}</span>
+      <span class="result-value">${formatPace(ghostRun.avgPace)}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Distance</span>
+      <span class="result-value">${formatDistance(userDist)} km</span>
+      <span class="result-value">${formatDistance(ghostRun.totalDistance)} km</span>
+    </div>
+  `;
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
 
-const urlGhost = loadGhostFromURL();
-if (urlGhost) {
-  ghostRun = urlGhost;
-  showPreview(ghostRun);
-}
+  const urlGhost = loadGhostFromURL();
+  if (urlGhost) {
+    ghostRun = urlGhost;
+    showPreview(ghostRun);
+  }
 
   document.getElementById('btn-import').addEventListener('click', () => showScreen('screen-import'));
   document.getElementById('back-import').addEventListener('click', () => showScreen('screen-home'));
@@ -333,12 +405,41 @@ if (urlGhost) {
 
   document.getElementById('btn-pause').addEventListener('click', togglePause);
 
-  document.getElementById('btn-stop').addEventListener('click', () => {
-    if (confirm('End this run?')) {
-      clearInterval(runInterval);
-      if (locationWatch) navigator.geolocation.clearWatch(locationWatch);
-      showScreen('screen-preview');
+  document.getElementById('btn-stop').addEventListener('click', endRun);
+
+  document.getElementById('btn-undo').addEventListener('click', () => {
+    if (!savedRunState) return;
+    clearTimeout(undoTimeout);
+    document.getElementById('undo-banner').classList.add('hidden');
+
+    // Restore run state
+    startTime = savedRunState.startTime;
+    totalPausedTime = savedRunState.totalPausedTime;
+    isPaused = savedRunState.isPaused;
+    userPositions = savedRunState.userPositions;
+
+    // Restart GPS and interval
+    if ('geolocation' in navigator) {
+      locationWatch = navigator.geolocation.watchPosition(
+        pos => {
+          if (!isPaused) {
+            userPositions.push({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude,
+              time: Date.now(),
+            });
+          }
+        },
+        err => console.warn('GPS error:', err.message),
+        { enableHighAccuracy: true, maximumAge: 0 }
+      );
     }
+    runInterval = setInterval(tick, 1000);
+    showScreen('screen-run');
+  });
+
+  document.getElementById('btn-run-again').addEventListener('click', () => {
+    showPreview(ghostRun);
   });
 
 });

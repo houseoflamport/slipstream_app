@@ -739,6 +739,38 @@ button:disabled {
   color: white;
   border: none;
 }
+
+.undo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #2C2C2E;
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  padding: 16px 24px;
+  text-align: center;
+  z-index: 100;
+}
+
+.undo-link {
+  color: #00E5FF;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+
+.summary-result {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 32px 24px 16px;
+}
+
 .hidden {
   display: none !important;
 }
