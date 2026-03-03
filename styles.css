@@ -721,9 +721,8 @@ button:disabled {
 }
 
 .ghost-ref {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.1em;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 36px;
   color: var(--text-dim);
   text-align: center;
   padding: 16px;
