@@ -329,9 +329,11 @@ if (urlGhost) {
   document.getElementById('btn-pause').addEventListener('click', togglePause);
 
   document.getElementById('btn-stop').addEventListener('click', () => {
-  if (confirm('End this run?')) {
-    clearInterval(runInterval);
-    if (locationWatch) navigator.geolocation.clearWatch(locationWatch);
-    showScreen('screen-preview');
-  }
+    if (confirm('End this run?')) {
+      clearInterval(runInterval);
+      if (locationWatch) navigator.geolocation.clearWatch(locationWatch);
+      showScreen('screen-preview');
+    }
+  });
+
 });
